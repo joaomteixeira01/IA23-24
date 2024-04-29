@@ -4,5 +4,4 @@
 Group 97
 
 ist197226 - Joao Teixeira
-
 ist183897 - Gonçalo Correia
