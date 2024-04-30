@@ -34,21 +34,24 @@ class PipeManiaState:
 
 class Board:
     """Representação interna de um tabuleiro de PipeMania."""
+    def __init__(self, board_data):
+        self.board = board_data
 
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
-        # TODO
-        pass
+        return self.board[row][col]
 
     def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente acima e abaixo, respectivamente."""
-        # TODO
-        pass
+        above = self.board[row - 1][col] if row > 0 else None
+        below = self.board[row + 1][col] if row < len(self.board) - 1 else None
+        return above, below
 
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente à esquerda e à direita, respectivamente."""
-        # TODO
-        pass
+        left = self.board[row][col - 1] if col > 0 else None
+        right = self.board[row][col + 1] if col < len(self.board[row]) - 1 else None
+        return left, right
 
     @staticmethod
     def parse_instance():
@@ -61,8 +64,11 @@ class Board:
             > from sys import stdin
             > line = stdin.readline().split()
         """
-        # TODO
-        pass
+        board_data = []
+        for line in sys.stdin:
+            row = line.strip().split()
+            board_data.append(row)
+        return Board(board_data)
 
     # TODO: outros metodos da classe
 
@@ -105,7 +111,10 @@ class PipeMania(Problem):
 if __name__ == "__main__":
     # TODO:
     # Ler o ficheiro do standard input,
+    board = Board.parse_instance()
+    problem = PipeMania(board)
     # Usar uma técnica de procura para resolver a instância,
+        # Temos de escolher umas das funcoes de procura em search.py
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
     pass
