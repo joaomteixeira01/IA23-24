@@ -159,7 +159,7 @@ if __name__ == "__main__":
     # TODO:
     # Ler o ficheiro do standard input,
     board = Board.parse_instance()
-    #board.print()
+    board.print()
     
     #print(board.adjacent_vertical_values(0, 0))
     #print(board.adjacent_horizontal_values(0, 0))
@@ -171,6 +171,8 @@ if __name__ == "__main__":
     print(initial_state.board.get_value(2, 2))
     result_state = problem.result(initial_state, (2, 2, True))
     print(result_state.board.get_value(2, 2))
+    
+    result_state.board.print()
 
     # Usar uma técnica de procura para resolver a instância,
         # Temos de escolher umas das funcoes de procura em search.py
