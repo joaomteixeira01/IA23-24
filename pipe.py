@@ -6,7 +6,7 @@
 # 00000 Nome1
 # 00000 Nome2
 
-import sys
+import sys, copy
 from search import (
     Problem,
     Node,
@@ -53,6 +53,47 @@ class Board:
         right = self.board[row][col + 1] if col < len(self.board[row]) - 1 else None
         return left, right
 
+    def print(self):
+        """Imprime o tabuleiro."""
+        for row in self.board:
+            for value in row:
+                print(value, end=' ')
+            print()
+
+    def set_value(self, row: int, col: int, rotation: bool) -> None:
+        """Altera o valor na respetiva posição do tabuleiro."""
+
+        piece = self.get_value(row, col)
+
+        if piece[0] == 'L':
+            if piece[1] == 'H':
+                piece = piece[0] + 'V'
+            else:
+                piece = piece[0] + 'H'
+        else:
+            if piece[1] == 'C':
+                if rotation == True:
+                    piece = piece[0] + 'D'
+                else:
+                    piece = piece[0] + 'E'
+            elif piece[1] == 'D':
+                if rotation == True:
+                    piece = piece[0] + 'B'
+                else:
+                    piece = piece[0] + 'C'
+            elif piece[1] == 'B':
+                if rotation == True:
+                    piece = piece[0] + 'E'
+                else:
+                    piece = piece[0] + 'D'
+            elif piece[1] == 'E':
+                if rotation == True:
+                    piece = piece[0] + 'C'
+                else:
+                    piece = piece[0] + 'B'
+            
+        self.board[row][col] = piece
+
     @staticmethod
     def parse_instance():
         """Lê o test do standard input (stdin) que é passado como argumento
@@ -69,15 +110,15 @@ class Board:
             row = line.strip().split()
             board_data.append(row)
         return Board(board_data)
-
+    
     # TODO: outros metodos da classe
 
 
 class PipeMania(Problem):
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
-        # TODO
-        pass
+
+        self.initial = PipeManiaState(board)
 
     def actions(self, state: PipeManiaState):
         """Retorna uma lista de ações que podem ser executadas a
@@ -90,8 +131,14 @@ class PipeMania(Problem):
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state)."""
-        # TODO
-        pass
+
+        new_board = copy.deepcopy(state.board)
+
+        new_board.set_value(action[0], action[1], action[2])
+
+        new_state = PipeManiaState(new_board)
+
+        return new_state
 
     def goal_test(self, state: PipeManiaState):
         """Retorna True se e só se o estado passado como argumento é
@@ -112,7 +159,19 @@ if __name__ == "__main__":
     # TODO:
     # Ler o ficheiro do standard input,
     board = Board.parse_instance()
+    #board.print()
+    
+    #print(board.adjacent_vertical_values(0, 0))
+    #print(board.adjacent_horizontal_values(0, 0))
+    #print(board.adjacent_vertical_values(1, 1))
+    #print(board.adjacent_horizontal_values(1, 1))
+
     problem = PipeMania(board)
+    initial_state = PipeManiaState(board)
+    print(initial_state.board.get_value(2, 2))
+    result_state = problem.result(initial_state, (2, 2, True))
+    print(result_state.board.get_value(2, 2))
+
     # Usar uma técnica de procura para resolver a instância,
         # Temos de escolher umas das funcoes de procura em search.py
     # Retirar a solução a partir do nó resultante,
