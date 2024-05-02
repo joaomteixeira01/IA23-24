@@ -6,6 +6,7 @@
 # 00000 Nome1
 # 00000 Nome2
 
+from aux_functions import *
 import sys, copy
 from search import (
     Problem,
@@ -31,6 +32,10 @@ class PipeManiaState:
 
     # TODO: outros metodos da classe
 
+    def is_goal(self):
+        # Criar uma funcao all_connections_valid que verifique se todas as conecçoes sao validas
+        return all_connections_valid(self.board)
+
 
 class Board:
     """Representação interna de um tabuleiro de PipeMania."""
@@ -41,13 +46,13 @@ class Board:
         """Devolve o valor na respetiva posição do tabuleiro."""
         return self.board[row][col]
 
-    def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
+    def adjacent_vertical_values(self, row: int, col: int) -> (str, str): # type: ignore
         """Devolve os valores imediatamente acima e abaixo, respectivamente."""
         above = self.board[row - 1][col] if row > 0 else None
         below = self.board[row + 1][col] if row < len(self.board) - 1 else None
         return above, below
 
-    def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
+    def adjacent_horizontal_values(self, row: int, col: int) -> (str, str): # type: ignore
         """Devolve os valores imediatamente à esquerda e à direita, respectivamente."""
         left = self.board[row][col - 1] if col > 0 else None
         right = self.board[row][col + 1] if col < len(self.board[row]) - 1 else None
@@ -107,8 +112,7 @@ class Board:
         """
         board_data = []
         for line in sys.stdin:
-            row = line.strip().split()
-            board_data.append(row)
+            board_data.append(line.strip().split())
         return Board(board_data)
     
     # TODO: outros metodos da classe
@@ -117,14 +121,25 @@ class Board:
 class PipeMania(Problem):
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
-
         self.initial = PipeManiaState(board)
 
     def actions(self, state: PipeManiaState):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
-        # TODO
-        pass
+
+        actions = []
+        board = state.board
+        
+
+        # Iterar por cada posição do tabuleiro
+        for row in range(len(board)):
+            for col in range(len(board[row])):
+                # Para cada peça, adicionar a ação 
+                actions.extend(get_possible_movements(row, col, board[row][col]))
+                # Uso do extend em vez de append, pois se for mais que um elemento o append n vai funcionar bem
+
+        return actions
+    
 
     def result(self, state: PipeManiaState, action):
         """Retorna o estado resultante de executar a 'action' sobre
