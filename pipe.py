@@ -122,13 +122,13 @@ class PipeMania(Problem):
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
         self.initial = PipeManiaState(board)
-
-    def actions(self, state: PipeManiaState):
-        """Retorna uma lista de ações que podem ser executadas a
-        partir do estado passado como argumento."""
+    
+    """def actions(self, state: PipeManiaState):
+        Retorna uma lista de ações que podem ser executadas a
+        partir do estado passado como argumento.
 
         actions = []
-        board = state.board
+        board = state.board.board
         
 
         # Iterar por cada posição do tabuleiro
@@ -138,7 +138,26 @@ class PipeMania(Problem):
                 actions.extend(get_possible_movements(row, col, board[row][col]))
                 # Uso do extend em vez de append, pois se for mais que um elemento o append n vai funcionar bem
 
+        return actions"""
+    
+    def actions(self, state: PipeManiaState):
+        """ Actions modificada para incluir a avaliacao do potencial e selecionar as acoes com potencial positivo """
+        actions = []
+        board = state.board.board
+
+        for row in range(len(board)):
+            for col in range(len(board[row])):
+                piece = board[row][col]
+                # Obter todas as orientações válidas para uma peça numa dada posição
+                possible_orientations = get_possible_movements(row, col, piece) 
+                for orientation in possible_orientations:
+                    # Para cada movimento válido, calcula um potencial que meça o número de conexões válidas que são criadas ou melhoradas pela rotação da peça.
+                    potential = evaluate_action_potential(board, row, col, orientation) 
+                    if potential > 0:  # Filtra para manter apenas movimentos com potencial positivo
+                        actions.append((row, col, orientation))
+                        
         return actions
+
     
 
     def result(self, state: PipeManiaState, action):
@@ -164,7 +183,10 @@ class PipeMania(Problem):
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
+        #contar o número de peças que ainda não estão conectadas corretamente
         # TODO
+        # A heurística é o inverso do número de conexões válidas, pois queremos maximizar as conexões
+        return -count_valid_connections(node.state.board)
         pass
 
     # TODO: outros metodos da classe
