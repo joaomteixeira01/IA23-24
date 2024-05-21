@@ -62,8 +62,10 @@ def count_connections(board, row, col):
 
 
 def get_vizinhos(row, col, board):
-    rows = len(board)
-    cols = len(board[0])
+    # rows = len(board)
+    # cols = len(board[0])
+    rows = board.get_num_rows()
+    cols = board.get_num_rows()
     neighbors = []
 
     # Verifica se existe vizinho à esquerda
@@ -127,7 +129,7 @@ def can_connect(piece1, pos1, piece2, pos2):
 
 # --------------------------- UNUSED ---------------------------
 
-def get_possible_movements(row: int, col: int, piece: str):
+def get_possible_movements(row: int, col: int, piece: str, size: int):
     """ funcao que vai retornar todos os possiveis movimentos de uma dada peca numa dada posicao
         movimentos que façam sentido, por exemplo, a peça F na posicao (0,0) nao faz sentido estar virada para C nem para E """
 
@@ -144,13 +146,13 @@ def get_possible_movements(row: int, col: int, piece: str):
             if p == 'V': possibilities.append('VB')
             if p == 'L': None
         
-        elif col == 1:
+        elif col > 0 and col < size - 1:
             if p == 'F': possibilities.extend(['FE', 'FD', 'FB'])
             if p == 'B': possibilities.append('BB')
             if p == 'V': possibilities.extend(['VB', 'VE'])
             if p == 'L': possibilities.append('LH')
         
-        elif col == 2:
+        elif col == size - 1:
             if p == 'F': possibilities.extend(['FE', 'FB'])
             if p == 'B': None
             if p == 'V': possibilities.append('VE')
@@ -160,7 +162,7 @@ def get_possible_movements(row: int, col: int, piece: str):
             # outside of board
             pass
 
-    if row == 1:
+    if row > 0 and row < size - 1:
         
         if col == 0:
             if p == 'F': possibilities.extend(['FC', 'FD', 'FB'])
@@ -168,13 +170,13 @@ def get_possible_movements(row: int, col: int, piece: str):
             if p == 'V': possibilities.extend(['VD', 'VB'])
             if p == 'L': possibilities.append('LV')
         
-        elif col == 1:
+        elif col > 0 and col < size - 1:
             if p == 'F': possibilities.extend(['FE', 'FC', 'FD', 'FB'])
             if p == 'B': possibilities.extend(['BE', 'BC', 'BD', 'BB'])
             if p == 'V': possibilities.extend(['VE', 'VC', 'VD', 'VB'])
             if p == 'L': possibilities.extend(['LH', 'LV'])
         
-        elif col == 2:
+        elif col == size - 1:
             if p == 'F': possibilities.extend(['FE', 'FB', 'FC'])
             if p == 'B': possibilities.append('BE')
             if p == 'V': possibilities.extend(['VC', 'VE'])
@@ -184,7 +186,7 @@ def get_possible_movements(row: int, col: int, piece: str):
             # outside of board
             pass
 
-    if row == 2:
+    if row == size - 1:
         
         if col == 0:
             if p == 'F': possibilities.extend(['FC', 'FD'])
@@ -192,13 +194,13 @@ def get_possible_movements(row: int, col: int, piece: str):
             if p == 'V': possibilities.append('VD')
             if p == 'L': None
         
-        elif col == 1:
+        elif col > 0 and col < size - 1:
             if p == 'F': possibilities.extend(['FE', 'FC', 'FD'])
             if p == 'B': possibilities.append('BC')
             if p == 'V': possibilities.extend(['VC', 'VD'])
             if p == 'L': possibilities.append('LH')
         
-        elif col == 2:
+        elif col == size - 1:
             if p == 'F': possibilities.extend(['FE', 'FC'])
             if p == 'B': None
             if p == 'V': possibilities.append('VC')
@@ -222,4 +224,19 @@ def count_valid_connections(board):
             total_connections += count_connections(board, row, col)
     return total_connections
 
+# --------------------------- UNUSED ---------------------------
 
+"""def all_connections_valid(self):
+        Verifica se todas as conexões no tabuleiro são válidas.
+        
+        rows = self.get_num_rows()
+        cols = self.get_num_rows()
+
+        for row in range(rows):
+            for col in range(cols):
+                current_piece = self.get_value(row, col)
+                neighbors = get_vizinhos(row, col)
+                for neighbor, position in neighbors:
+                    if not can_connect(current_piece, (row, col), neighbor, position):
+                        return False
+        return True"""

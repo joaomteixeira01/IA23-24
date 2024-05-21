@@ -6,7 +6,7 @@
 # 00000 Nome1
 # 00000 Nome2
 
-from aux_functions import *
+#from aux_functions import *
 import sys, copy
 from search import (
     Problem,
@@ -31,10 +31,6 @@ class PipeManiaState:
         return self.id < other.id
 
     # TODO: outros metodos da classe
-
-    def is_goal(self):
-        # Criar uma funcao all_connections_valid que verifique se todas as conecçoes sao validas
-        return all_connections_valid(self.board)
 
 
 class Board:
@@ -65,40 +61,15 @@ class Board:
                 print(value, end=' ')
             print()
 
-    def set_value(self, row: int, col: int, rotation: bool) -> None:
+    def set_value(self, row: int, col: int, new_piece: str) -> None:
         """Altera o valor na respetiva posição do tabuleiro."""
 
-        piece = self.get_value(row, col)
+        self.board[row][col] = new_piece
 
-        if piece[0] == 'L':
-            if piece[1] == 'H':
-                piece = piece[0] + 'V'
-            else:
-                piece = piece[0] + 'H'
-        else:
-            if piece[1] == 'C':
-                if rotation == True:
-                    piece = piece[0] + 'D'
-                else:
-                    piece = piece[0] + 'E'
-            elif piece[1] == 'D':
-                if rotation == True:
-                    piece = piece[0] + 'B'
-                else:
-                    piece = piece[0] + 'C'
-            elif piece[1] == 'B':
-                if rotation == True:
-                    piece = piece[0] + 'E'
-                else:
-                    piece = piece[0] + 'D'
-            elif piece[1] == 'E':
-                if rotation == True:
-                    piece = piece[0] + 'C'
-                else:
-                    piece = piece[0] + 'B'
-            
-        self.board[row][col] = piece
-
+    def get_length(self):
+        """Returns the number of rows in the board."""
+        return len(self.board)
+    
     @staticmethod
     def parse_instance():
         """Lê o test do standard input (stdin) que é passado como argumento
@@ -114,6 +85,212 @@ class Board:
         for line in sys.stdin:
             board_data.append(line.strip().split())
         return Board(board_data)
+    
+    
+    def evaluate_action_potential(self, row: int, col: int, new_orientation: str) -> int:
+        """ O objetivo desta funcao eh avaliar quantitativamente o efeito de uma ação (uma possível rotação de peça) 
+        em termos de como essa ação melhora ou piora as conexões entre as peças no tabuleiro. 
+        Isso é feito calculando a diferença no número de conexões válidas antes e depois da ação ser aplicada."""
+
+        current_orientation = self.board[row][col]
+
+        self.board[row][col] = new_orientation                       # Temporariamente aplica a nova orientação
+        new_connections = self.count_connections(row, col)    # Calcula conexões para a nova orientação
+
+        self.board[row][col] = current_orientation                       # Reverte para a orientação original
+        current_connections = self.count_connections(row, col)    # Calcula conexões para a orientação atual
+
+        return new_connections - current_connections  # Potencial é a diferença nas conexões
+    
+    def count_connections(self, row, col) -> int:
+        """Contar quantas conexões válidas uma peça específica tem com suas peças vizinhas no tabuleiro (cima, baixo, esquerda, direita)."""
+        # 1º Identificar os Vizinhos: Para uma peça na posição (row, col), identificar as peças vizinhas 
+        # 2º Verificar Conexões: Para cada uma dessas posições, verificar se a peça atual se pode conectar à peça vizinha com base na orientação das peças 
+        total_connections = 0
+    
+        current_piece = (self.board[row][col], (row, col))
+        neighbours = self.get_vizinhos(row, col)
+
+        for neighbour in neighbours:
+            if self.can_connect(current_piece, neighbour):
+                total_connections += 1
+
+        return total_connections
+    
+    def get_vizinhos(self, row, col) -> list:
+        # rows = len(board)
+        # cols = len(board[0])
+        rows = self.get_length()
+        cols = self.get_length()
+        neighbours = []
+
+        # Verifica se existe vizinho à esquerda
+        if col > 0:
+            neighbours.append((self.board[row][col-1], (row, col-1)))
+        # Verifica se existe vizinho à direita
+        if col < cols - 1:
+            neighbours.append((self.board[row][col+1], (row, col+1)))
+        # Verifica se existe vizinho acima
+        if row > 0:
+            neighbours.append((self.board[row-1][col], (row-1, col))) 
+        # Verifica se existe vizinho abaixo
+        if row < rows - 1:
+            neighbours.append((self.board[row+1][col], (row+1, col))) 
+
+        return neighbours
+    
+    def can_connect(self, piece1, neighbour) -> bool:
+        """Verifica se duas peças conectam.
+        Retorna True se a conexão for válida, False caso contrário."""
+        
+        pieces = {
+            'F': {'C', 'B', 'E', 'D'},
+            'B': {'C', 'B', 'E', 'D'},
+            'V': {'C', 'B', 'E', 'D'},
+            'L': {'V', 'H'}
+        }
+
+        connections = {
+            # Nas ligacoes da peca F temos de retirar a ligacao F da lista
+            'up': {'FB', 'BB', 'BE', 'BD', 'VB', 'VE', 'LV'},
+            'down': {'FC', 'BC', 'BE', 'BD', 'VC', 'VD', 'LV'},
+            'left': {'FD', 'BC', 'BB', 'BD', 'VB', 'VD', 'LH'},
+            'right': {'FE', 'BC', 'BB', 'BE', 'VC', 'VE', 'LV'}
+        }
+
+        row1, col1 = piece1[1]
+        row2, col2 = neighbour[1]
+        piece2 = neighbour
+        
+
+        # Se as peças forem do tipo 'F', retorna False
+        if piece1[0] == 'F' and piece2[0] == 'F':
+            return False
+
+        # Determinar a direção da conexão com base nas posições relativas
+        if row1 == row2:
+            if col2 == col1 + 1:
+                direction = 'right'
+            elif col2 == col1 - 1:
+                direction = 'left'
+            else:
+                return False
+        elif col1 == col2:
+            if row2 == row1 + 1:
+                direction = 'down'
+            elif row2 == row1 - 1:
+                direction = 'up'
+            else:
+                return False
+        else:
+            return False  # As peças não estão alinhadas horizontal ou verticalmente
+
+        # Buscar as conexões possíveis para a peça1 na direção calculada
+        p1_connections = connections.get(direction, set())
+
+        # Caso piece1 seja F, remover a peca F das conexoes
+        if piece1[0] == 'F': 
+            p1_connections = [item for item in p1_connections if 'F' not in item]
+
+        # Verificar se a combinação de tipo e orientação da peça2 é válida para a conexão
+        if piece2 in p1_connections:
+            return True
+
+        return False
+    
+    def get_possible_movements(self, row: int, col: int, piece: str, size: int) -> list:
+        """ funcao que vai retornar todos os possiveis movimentos de uma dada peca numa dada posicao
+            movimentos que façam sentido, por exemplo, a peça F na posicao (0,0) nao faz sentido estar virada para C nem para E """
+
+        
+
+        possibilities = []
+        p = piece[0]
+
+        if row == 0:
+            
+            if col == 0:
+                if p == 'F': possibilities.extend(['FD', 'FB'])
+                if p == 'B': None
+                if p == 'V': possibilities.append('VB')
+                if p == 'L': None
+            
+            elif col > 0 and col < size - 1:
+                if p == 'F': possibilities.extend(['FE', 'FD', 'FB'])
+                if p == 'B': possibilities.append('BB')
+                if p == 'V': possibilities.extend(['VB', 'VE'])
+                if p == 'L': possibilities.append('LH')
+            
+            elif col == size - 1:
+                if p == 'F': possibilities.extend(['FE', 'FB'])
+                if p == 'B': None
+                if p == 'V': possibilities.append('VE')
+                if p == 'L': None
+            
+            else:
+                # outside of board
+                pass
+
+        if row > 0 and row < size - 1:
+            
+            if col == 0:
+                if p == 'F': possibilities.extend(['FC', 'FD', 'FB'])
+                if p == 'B': possibilities.append('BD')
+                if p == 'V': possibilities.extend(['VD', 'VB'])
+                if p == 'L': possibilities.append('LV')
+            
+            elif col > 0 and col < size - 1:
+                if p == 'F': possibilities.extend(['FE', 'FC', 'FD', 'FB'])
+                if p == 'B': possibilities.extend(['BE', 'BC', 'BD', 'BB'])
+                if p == 'V': possibilities.extend(['VE', 'VC', 'VD', 'VB'])
+                if p == 'L': possibilities.extend(['LH', 'LV'])
+            
+            elif col == size - 1:
+                if p == 'F': possibilities.extend(['FE', 'FB', 'FC'])
+                if p == 'B': possibilities.append('BE')
+                if p == 'V': possibilities.extend(['VC', 'VE'])
+                if p == 'L': possibilities.append('LV')
+            
+            else:
+                # outside of board
+                pass
+
+        if row == size - 1:
+            
+            if col == 0:
+                if p == 'F': possibilities.extend(['FC', 'FD'])
+                if p == 'B': None
+                if p == 'V': possibilities.append('VD')
+                if p == 'L': None
+            
+            elif col > 0 and col < size - 1:
+                if p == 'F': possibilities.extend(['FE', 'FC', 'FD'])
+                if p == 'B': possibilities.append('BC')
+                if p == 'V': possibilities.extend(['VC', 'VD'])
+                if p == 'L': possibilities.append('LH')
+            
+            elif col == size - 1:
+                if p == 'F': possibilities.extend(['FE', 'FC'])
+                if p == 'B': None
+                if p == 'V': possibilities.append('VC')
+                if p == 'L': None
+            
+            else:
+                # outside of board
+                pass
+
+        # Remove a posicao atual da peca
+        if piece in possibilities:
+            possibilities.remove(piece)
+
+        return possibilities
+    
+    def count_valid_connections(self) -> int:
+        total_connections = 0
+        for row in range(len(self.board)):
+            for col in range(len(self.board[0])):
+                total_connections += self.count_connections(row, col)
+        return total_connections
     
     # TODO: outros metodos da classe
 
@@ -143,19 +320,29 @@ class PipeMania(Problem):
     def actions(self, state: PipeManiaState):
         """ Actions modificada para incluir a avaliacao do potencial e selecionar as acoes com potencial positivo """
         actions = []
-        board = state.board.board
+        actions0 = []
+        actions1 = []
+        actions2 = []
+        size = state.board.get_length()
 
-        for row in range(len(board)):
-            for col in range(len(board[row])):
-                piece = board[row][col]
+        for row in range(size):
+            for col in range(size):
+                piece = state.board.board[row][col]
                 # Obter todas as orientações válidas para uma peça numa dada posição
-                possible_orientations = get_possible_movements(row, col, piece) 
+                possible_orientations = state.board.get_possible_movements(row, col, piece, size) 
                 for orientation in possible_orientations:
                     # Para cada movimento válido, calcula um potencial que meça o número de conexões válidas que são criadas ou melhoradas pela rotação da peça.
-                    potential = evaluate_action_potential(board, row, col, orientation) 
-                    if potential > 0:  # Filtra para manter apenas movimentos com potencial positivo
-                        actions.append((row, col, orientation))
-                        
+                    potential = state.board.evaluate_action_potential(row, col, orientation) 
+                    if potential == 2:  # Filtra para manter apenas movimentos com potencial positivo
+                        actions2.append((row, col, orientation))
+                    elif potential == 1:
+                        actions1.append((row, col, orientation))
+                    elif potential == 0:
+                        actions0.append((row, col, orientation))
+
+        actions.extend(actions2)
+        actions.extend(actions1)
+        actions.extend(actions0)               
         return actions
 
     
@@ -178,16 +365,30 @@ class PipeMania(Problem):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
-        # TODO
-        pass
+        
+        size = state.board.get_length()   # Tamanho do tabuleiro
+
+        connections = state.board.count_valid_connections()
+
+        if connections == 2 * ((size * size) - 1):
+            return True
+        else:
+            return False
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
         #contar o número de peças que ainda não estão conectadas corretamente
-        # TODO
         # A heurística é o inverso do número de conexões válidas, pois queremos maximizar as conexões
-        return -count_valid_connections(node.state.board)
-        pass
+        
+        connections = node.state.board.count_valid_connections()
+        size = node.state.board.get_length()
+        
+        goal_connections = 2 * ((size * size) - 1)
+        
+        diff = goal_connections - connections
+        print(diff)
+
+        return diff
 
     # TODO: outros metodos da classe
 
@@ -205,9 +406,7 @@ if __name__ == "__main__":
 
     problem = PipeMania(board)
     initial_state = PipeManiaState(board)
-    print(initial_state.board.get_value(2, 2))
-    result_state = problem.result(initial_state, (2, 2, True))
-    print(result_state.board.get_value(2, 2))
+    result_state = astar_search(problem)
     
     result_state.board.print()
 
