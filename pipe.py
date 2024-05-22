@@ -36,8 +36,13 @@ class PipeManiaState:
 class Board:
     """Representação interna de um tabuleiro de PipeMania."""
 
-    def __init__(self, board_data):
+    def __init__(self, board_data, board_size):
+        """""if isinstance(board_data[0], str):  # list of strings
+            self.board = [list(row) for row in board_data]
+        else:
+            self.board = board_data"""
         self.board = board_data
+        self.size = board_size
 
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
@@ -71,7 +76,8 @@ class Board:
         board_data = []
         for line in sys.stdin:
             board_data.append(line.strip().split())
-        return Board(board_data)
+        board_size = len(board_data[0])
+        return Board(board_data, board_size)
 
     def print(self):
         """Imprime o tabuleiro."""
@@ -92,7 +98,7 @@ class Board:
 
         normal_actions = [(position, 'clockwise'), (position, 'counter'), (position, 'inverse'), (position, 'keep')]
 
-        abnormal_actions = [(position, 'inverse'), (position, 'keep')]
+        abnormal_actions = [(position, 'clockwise'), (position, 'keep')]
 
 
         if piece[0] != 'L':
@@ -111,7 +117,7 @@ class Board:
             return
         
         if piece[0] == 'L':
-            if change == 'inverse':
+            if change == 'clockwise':
                 if piece[1] == 'H':
                     self.board[row][col] = 'L' + 'V'
                 else:
@@ -148,13 +154,16 @@ class Board:
                 elif piece[1] == 'D':
                     self.board[row][col] = piece[0] + 'E'
     
+    def to_list(self):
+        pass
+   
     # TODO: outros metodos da classe
 
 
 class PipeMania(Problem):
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
-        self.initial = PipeManiaState(board, 1)
+        self.initial = board
 
     def actions(self, state: PipeManiaState):
         """Retorna uma lista de ações que podem ser executadas a
@@ -162,13 +171,15 @@ class PipeMania(Problem):
         
         actions = []
         position = state.position
-        size = len(state.board.board)
+        board = state.board
+        size = board.size
 
-        if position == size*size + 1:
+        if position > size*size : # position > size*size
             return actions
-
         else:
-            actions = state.board.get_actions(position)
+            #possivelmente fazer algo aqui
+            #board = Board(board_list)
+            actions = board.get_actions(position)
 
             return actions
 
@@ -181,20 +192,21 @@ class PipeMania(Problem):
         position = action[0]
         change = action[1]
 
-        new_board = copy.deepcopy(state.board)
+        new_board = copy.copy(state.board)
 
-        size = len(new_board.board)
+        new_board.set_value(position, change) # verificar size
 
-        new_board.set_value(position, change, size)
+        #new_board_simplified = new_board.to_list()
 
-        return (new_board, state.position + 1)
+        return PipeManiaState(new_board, state.position + 1)
 
     def goal_test(self, state: PipeManiaState):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
         
-        size = len(state.board.board)
+        board = state.board
+        size = state.board.size
 
         connects_up = ['FC', 'BC', 'BE', 'BD', 'VC', 'VD', 'LV']
         connects_down = ['FB', 'BB', 'BE', 'BD', 'VB', 'VE', 'LV']
@@ -203,17 +215,17 @@ class PipeMania(Problem):
 
         for row in range(size):
             for col in range(size):
-                if state.board.board[row][col] in connects_up:
-                    if state.board.board[row+1][col] not in connects_down:
+                if board.board[row][col] in connects_up:
+                    if board.board[row+1][col] not in connects_down:
                         return False
-                if state.board.board[row][col] in connects_down:
-                    if state.board.board[row-1][col] not in connects_up:
+                if board.board[row][col] in connects_down:
+                    if board.board[row-1][col] not in connects_up:
                         return False
-                if state.board.board[row][col] in connects_right:
-                    if state.board.board[row][col+1] not in connects_left:
+                if board.board[row][col] in connects_right:
+                    if board.board[row][col+1] not in connects_left:
                         return False
-                if state.board.board[row][col] in connects_left:
-                    if state.board.board[row][col-1] not in connects_right:
+                if board.board[row][col] in connects_left:
+                    if board.board[row][col-1] not in connects_right:
                         return False
                     
         return True
@@ -232,7 +244,7 @@ if __name__ == "__main__":
     board.print()
 
     problem = PipeMania(board)
-    initial_state = PipeManiaState(board, 1)
+    #initial_state = (board, 1)
     result_state = depth_first_tree_search(problem)
     
     result_state.board.print()
