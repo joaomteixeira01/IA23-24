@@ -226,8 +226,8 @@ def count_valid_connections(board):
 
 # --------------------------- UNUSED ---------------------------
 
-"""def all_connections_valid(self):
-        Verifica se todas as conexões no tabuleiro são válidas.
+def all_connections_valid(self):
+        """Verifica se todas as conexões no tabuleiro são válidas."""
         
         rows = self.get_num_rows()
         cols = self.get_num_rows()
@@ -239,4 +239,97 @@ def count_valid_connections(board):
                 for neighbor, position in neighbors:
                     if not can_connect(current_piece, (row, col), neighbor, position):
                         return False
-        return True"""
+        return True
+
+def get_possible_actions(self, position: int):
+    """Retorna uma lista de ações possíveis para a peça na posição
+    (row, col) do tabuleiro."""
+
+    board = self.board
+    size = self.size
+
+    row = (position-1) // size
+    col = (position-1) % size
+
+    piece = board[row][col]
+
+    if self.check_corner(row, col):
+        
+        if self.upper_left_corner(row, col):
+            
+            if piece[0] == 'F':
+                if piece[1] == 'C':
+                    return [(position, 'clockwise'), (position, 'inverse')]
+                if piece[1] == 'B':
+                    return [(position, 'counter'), (position, 'keep')]
+                if piece [1] == 'E':
+                    return [(position, 'counter'), (position, 'inverse')]
+                if piece[1] == 'D':
+                    return [(position, 'clockwise'), (position, 'keep')]
+            
+            if piece[0] == 'V':
+                pass
+                
+
+def check_corner (self, row: int, col: int):
+    """Verifica se a peça na posição (row, col) é um canto."""
+    
+    if row == 0 and col == 0:
+        return True
+    if row == 0 and col == self.size - 1:
+        return True
+    if row == self.size - 1 and col == 0:
+        return True
+    if row == self.size - 1 and col == self.size - 1:
+        return True
+    else:
+        return False
+    
+def check_edge (self, row: int, col: int):
+    """Verifica se a peça na posição (row, col) é uma borda."""
+
+    if row == 0 and col != 0 and col != self.size - 1:
+        return True
+    
+    if row == self.size - 1 and col != 0 and col != self.size - 1:
+        return True
+    
+    if col == 0 and row != 0 and row != self.size - 1:
+        return True
+    
+    if col == self.size - 1 and row != 0 and row != self.size - 1:
+        return True
+    else:
+        return False
+    
+def upper_left_corner (self, row: int, col: int):
+    """Verifica se a peça na posição (row, col) é um canto superior esquerdo."""
+    
+    if row == 0 and col == 0:
+        return True
+    else:
+        return False
+    
+def upper_right_corner (self, row: int, col: int):
+    """Verifica se a peça na posição (row, col) é um canto superior direito."""
+    
+    if row == 0 and col == self.size - 1:
+        return True
+    else:
+        return False
+    
+def bottom_left_corner (self, row: int, col: int):
+    """Verifica se a peça na posição (row, col) é um canto inferior esquerdo."""
+    
+    if row == self.size - 1 and col == 0:
+        return True
+    else:
+        return False
+
+def bottom_right_corner (self, row: int, col: int):
+    """Verifica se a peça na posição (row, col) é um canto inferior direito."""
+    
+    if row == self.size - 1 and col == self.size - 1:
+        return True
+    else:
+        return False
