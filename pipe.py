@@ -253,8 +253,3 @@ if __name__ == "__main__":
         result_state.board.print_board()
 
     pass
-
-
-# Alterar
-#   - Em vez de usarmos position, dividir position em row e col
-#       - evita o usa de size no set_value
