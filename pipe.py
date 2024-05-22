@@ -37,7 +37,7 @@ class Board:
     """Representação interna de um tabuleiro de PipeMania."""
 
     def __init__(self, board_data, board_size):
-        """""if isinstance(board_data[0], str):  # list of strings
+        """if isinstance(board_data[0], str):  # list of strings
             self.board = [list(row) for row in board_data]
         else:
             self.board = board_data"""
@@ -106,12 +106,14 @@ class Board:
         else:
             return abnormal_actions
         
-    def set_value(self, position: int, change: str, size: int):
+    #def set_value(self, position: int, change: str, size: int):
+    def set_value(self, row, col, change):
         
-        row = (position-1) // size
-        col = (position-1) % size
+        #row = (position-1) // size
+        #col = (position-1) % size
+        #piece = self.board[row][col]
 
-        piece = self.board[row][col]
+        piece = self.get_value(row, col)
 
         if change == 'keep':
             return
@@ -161,44 +163,41 @@ class Board:
 
 
 class PipeMania(Problem):
+
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
-        self.initial = board
+        #self.initial = board
+        self.initial = PipeManiaState(board, 0)
 
     def actions(self, state: PipeManiaState):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
-        
-        actions = []
-        position = state.position
-        board = state.board
-        size = board.size
 
-        if position > size*size : # position > size*size
-            return actions
-        else:
-            #possivelmente fazer algo aqui
-            #board = Board(board_list)
-            actions = board.get_actions(position)
-
-            return actions
+        if state.position >= state.board.size**2:
+            return []
+        return state.board.get_actions(state.position + 1)
 
     def result(self, state: PipeManiaState, action):
         """Retorna o estado resultante de executar a 'action' sobre
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state)."""
-        
+
+        """
         position = action[0]
         change = action[1]
-
-        new_board = copy.copy(state.board)
-
+        new_board = copy.deepcopy(state.board)
         new_board.set_value(position, change) # verificar size
-
         #new_board_simplified = new_board.to_list()
+        return PipeManiaState(new_board, state.position + 1)"""
+
+        new_board = copy.deepcopy(state.board)
+        pos, change = action
+        row, col = divmod(pos - 1, state.board.size)
+        new_board.set_value(row, col, change)
 
         return PipeManiaState(new_board, state.position + 1)
+
 
     def goal_test(self, state: PipeManiaState):
         """Retorna True se e só se o estado passado como argumento é
@@ -216,16 +215,16 @@ class PipeMania(Problem):
         for row in range(size):
             for col in range(size):
                 if board.board[row][col] in connects_up:
-                    if board.board[row+1][col] not in connects_down:
+                    if row == 0 or board.board[row+1][col] not in connects_down:
                         return False
                 if board.board[row][col] in connects_down:
-                    if board.board[row-1][col] not in connects_up:
+                    if row == size - 1 or board.board[row-1][col] not in connects_up:
                         return False
                 if board.board[row][col] in connects_right:
-                    if board.board[row][col+1] not in connects_left:
+                    if col == size - 1 or board.board[row][col+1] not in connects_left:
                         return False
                 if board.board[row][col] in connects_left:
-                    if board.board[row][col-1] not in connects_right:
+                    if col == 0 or board.board[row][col-1] not in connects_right:
                         return False
                     
         return True
@@ -247,6 +246,15 @@ if __name__ == "__main__":
     #initial_state = (board, 1)
     result_state = depth_first_tree_search(problem)
     
-    result_state.board.print()
+    #result_state.board.print() # Esta a dar attributeError porque dfs não consegue encontrar uma solução e retorna None como resultado
+    if result_state is None:
+        print("Nenhuma solução foi encontrada.")
+    else:
+        result_state.board.print_board()
 
     pass
+
+
+# Alterar
+#   - Em vez de usarmos position, dividir position em row e col
+#       - evita o usa de size no set_value
