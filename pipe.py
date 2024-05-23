@@ -5,7 +5,7 @@
 # Grupo 00:
 # 00000 Nome1
 # 00000 Nome2
-
+import cProfile
 import time;
 start_time = time.time()
 
@@ -339,6 +339,9 @@ class PipeMania(Problem):
 
 
 if __name__ == "__main__":
+
+    pr = cProfile.Profile()
+    pr.enable()
     
     board = Board.parse_instance()
     #board.print()
@@ -358,3 +361,5 @@ if __name__ == "__main__":
         end_time = time.time()
         final_time = end_time - start_time
         print(final_time)
+    pr.disable()
+    pr.print_stats(sort='time')
