@@ -73,9 +73,7 @@ class Board:
             > from sys import stdin
             > line = stdin.readline().split()
         """
-        board_data = []
-        for line in sys.stdin:
-            board_data.append(line.strip().split())
+        board_data = [line.strip().split() for line in sys.stdin]
         board_size = len(board_data[0])
         return Board(board_data, board_size)
 
@@ -106,12 +104,8 @@ class Board:
         else:
             return abnormal_actions
         
-    #def set_value(self, position: int, change: str, size: int):
     def set_value(self, row, col, change):
-        
-        #row = (position-1) // size
-        #col = (position-1) % size
-        #piece = self.board[row][col]
+        """Altera o valor na respetiva posição do tabuleiro."""
 
         piece = self.get_value(row, col)
 
@@ -166,7 +160,6 @@ class PipeMania(Problem):
 
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
-        #self.initial = board
         self.initial = PipeManiaState(board, 0)
 
     def actions(self, state: PipeManiaState):
@@ -183,17 +176,10 @@ class PipeMania(Problem):
         das presentes na lista obtida pela execução de
         self.actions(state)."""
 
-        """
-        position = action[0]
-        change = action[1]
-        new_board = copy.deepcopy(state.board)
-        new_board.set_value(position, change) # verificar size
-        #new_board_simplified = new_board.to_list()
-        return PipeManiaState(new_board, state.position + 1)"""
-
         new_board = copy.deepcopy(state.board)
         pos, change = action
         row, col = divmod(pos - 1, state.board.size)
+        
         new_board.set_value(row, col, change)
 
         return PipeManiaState(new_board, state.position + 1)
@@ -213,16 +199,21 @@ class PipeMania(Problem):
         connects_left = ['FE', 'BC', 'BB', 'BE', 'VC', 'VE', 'LH']
 
         for row in range(size):
+
             for col in range(size):
+
                 if board.board[row][col] in connects_up:
-                    if row == 0 or board.board[row+1][col] not in connects_down:
+                    if row == 0 or board.board[row-1][col] not in connects_down:
                         return False
+                    
                 if board.board[row][col] in connects_down:
-                    if row == size - 1 or board.board[row-1][col] not in connects_up:
+                    if row == size - 1 or board.board[row+1][col] not in connects_up:
                         return False
+                    
                 if board.board[row][col] in connects_right:
                     if col == size - 1 or board.board[row][col+1] not in connects_left:
                         return False
+                    
                 if board.board[row][col] in connects_left:
                     if col == 0 or board.board[row][col-1] not in connects_right:
                         return False
@@ -246,10 +237,9 @@ if __name__ == "__main__":
     #initial_state = (board, 1)
     result_state = depth_first_tree_search(problem)
     
-    #result_state.board.print() # Esta a dar attributeError porque dfs não consegue encontrar uma solução e retorna None como resultado
     if result_state is None:
         print("Nenhuma solução foi encontrada.")
     else:
-        result_state.board.print_board()
+        result_state.state.board.print()  # Acede ao board a partir do state do Node retornado
 
     pass

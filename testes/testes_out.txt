@@ -1,0 +1,31 @@
+teste1:
+    FB  VB  VE  
+    BD  BE  LV 
+    FC  FC  FC
+
+teste2:
+    VB  VE
+    FC  FC
+
+teste3:
+    VB  VE
+    VD  VC
+
+teste4:
+    FB  VB  VE
+    BD  BE  LV
+    FC  FC  FC
+
+teste5:
+    FB  VB  VE
+    VD  BE  LV
+    FD  VC  FC
+
+teste6:
+    FB  FD  VE
+    BD  LH  BE
+    VD  FE  FC
+
+teste7:
+    FD  BB  BB  FE
+    FD
