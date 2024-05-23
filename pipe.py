@@ -17,6 +17,9 @@ from search import (
     recursive_best_first_search,
 )
 
+def coords_to_position(row, col, size):
+    return row * size + col + 1
+
 
 class PipeManiaState:
     state_id = 0
@@ -32,17 +35,17 @@ class PipeManiaState:
 
     # TODO: outros metodos da classe
 
-
 class Board:
     """Representação interna de um tabuleiro de PipeMania."""
 
-    def __init__(self, board_data, board_size):
+    def __init__(self, board_data, board_size, board_locked_list):
         """if isinstance(board_data[0], str):  # list of strings
             self.board = [list(row) for row in board_data]
         else:
             self.board = board_data"""
         self.board = board_data
         self.size = board_size
+        self.locked = board_locked_list
 
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
@@ -75,7 +78,8 @@ class Board:
         """
         board_data = [line.strip().split() for line in sys.stdin]
         board_size = len(board_data[0])
-        return Board(board_data, board_size)
+        board_locked_list = []
+        return Board(board_data, board_size, board_locked_list)
 
     def print(self):
         """Imprime o tabuleiro."""
@@ -150,9 +154,108 @@ class Board:
                 elif piece[1] == 'D':
                     self.board[row][col] = piece[0] + 'E'
     
-    def to_list(self):
-        pass
+    def lock_positions(self):
+        
+        self.lock_edges()
+
+        self.lock_corners()
+
+    def lock_edges(self):
+
+        for i in range(self.size):
+            for j in range(self.size):
+                if i == 0 and j != 0 and j != self.size - 1: #linha superior
+                    if self.board[i][j][0] == 'L':
+                        self.board[i][j] = 'LH'
+                        self.locked.append(coords_to_position(i, j, self.size))
+
+                    if self.board[i][j][0] == 'B':
+                        self.board[i][j] = 'BB'
+                        self.locked.append(coords_to_position(i, j, self.size))
+
+                if i == self.size - 1 and j != 0 and j != self.size - 1: #linha inferior
+                    if self.board[i][j][0] == 'L':
+                        self.board[i][j] = 'LH'
+                        self.locked.append(coords_to_position(i, j, self.size))
+
+                    if self.board[i][j][0] == 'B':
+                        self.board[i][j] = 'BC'
+                        self.locked.append(coords_to_position(i, j, self.size))
+
+                if j == 0 and i != 0 and i != self.size - 1: #coluna esquerda
+                    if self.board[i][j][0] == 'L':
+                        self.board[i][j] = 'LV'
+                        self.locked.append(coords_to_position(i, j, self.size))
+
+                    if self.board[i][j][0] == 'B':
+                        self.board[i][j] = 'BD'
+                        self.locked.append(coords_to_position(i, j, self.size))
+
+                if j == self.size - 1 and i != 0 and i != self.size - 1: #coluna direita
+                    if self.board[i][j][0] == 'L':
+                        self.board[i][j] = 'LV'
+                        self.locked.append(coords_to_position(i, j, self.size))
+
+                    if self.board[i][j][0] == 'B':
+                        self.board[i][j] = 'BE'
+                        self.locked.append(coords_to_position(i, j, self.size))
    
+    def lock_corners(self):
+
+        if self.board[0][0][0] == 'V': #canto superior esquerdo
+            self.board[0][0] = 'VB'
+            self.locked.append(coords_to_position(0, 0, self.size))
+
+        if self.board[0][self.size-1][0] == 'V': #canto superior direito
+            self.board[0][self.size-1] = 'VE'
+            self.locked.append(coords_to_position(0, self.size-1, self.size))
+
+        if self.board[self.size-1][0][0] == 'V': #canto inferior esquerdo
+            self.board[self.size-1][0] = 'VD'
+            self.locked.append(coords_to_position(self.size-1, 0, self.size))
+
+        if self.board[self.size-1][self.size-1][0] == 'V': #canto inferior direito
+            self.board[self.size-1][self.size-1] = 'VC'
+            self.locked.append(coords_to_position(self.size-1, self.size-1, self.size))
+
+
+        if self.board[0][0][0] == 'F': #canto superior esquerdo
+            if self.board[0][1][0] == 'B' or self.board[0][1][0] == 'L':
+                self.board[0][0] = 'FD'
+                self.locked.append(coords_to_position(0, 0, self.size))
+
+            if self.board[1][0][0] == 'B' or self.board[1][0][0] == 'L':
+                self.board[0][0] = 'FB'
+                self.locked.append(coords_to_position(0, 0, self.size))
+
+        if self.board[0][self.size-1][0] == 'F': #canto superior direito
+            if self.board[0][self.size-2][0] == 'B' or self.board[0][self.size-2][0] == 'L':
+                self.board[0][self.size-1] = 'FE'
+                self.locked.append(coords_to_position(0, self.size-1, self.size))
+
+            if self.board[1][self.size-1][0] == 'B' or self.board[1][self.size-1][0] == 'L':
+                self.board[0][self.size-1] = 'FB'
+                self.locked.append(coords_to_position(0, self.size-1, self.size))
+
+        if self.board[self.size-1][0][0] == 'F': #canto inferior esquerdo
+            if self.board[self.size-1][1][0] == 'B' or self.board[self.size-1][1][0] == 'L':
+                self.board[self.size-1][0] = 'FD'
+                self.locked.append(coords_to_position(self.size-1, 0, self.size))
+
+            if self.board[self.size-2][0][0] == 'B' or self.board[self.size-2][0][0] == 'L':
+                self.board[self.size-1][0] = 'FC'
+                self.locked.append(coords_to_position(self.size-1, 0, self.size))
+
+        if self.board[self.size-1][self.size-1][0] == 'F': #canto inferior direito
+            if self.board[self.size-1][self.size-2][0] == 'B' or self.board[self.size-1][self.size-2][0] == 'L':
+                self.board[self.size-1][self.size-1] = 'FE'
+                self.locked.append(coords_to_position(self.size-1, self.size-1, self.size))
+
+            if self.board[self.size-2][self.size-1][0] == 'B' or self.board[self.size-2][self.size-1][0] == 'L':
+                self.board[self.size-1][self.size-1] = 'FC'
+                self.locked.append(coords_to_position(self.size-1, self.size-1, self.size))
+
+    
     # TODO: outros metodos da classe
 
 
@@ -168,6 +271,10 @@ class PipeMania(Problem):
 
         if state.position >= state.board.size**2:
             return []
+        
+        if (state.position+1) in state.board.locked:
+            return []
+        
         return state.board.get_actions(state.position + 1)
 
     def result(self, state: PipeManiaState, action):
@@ -231,7 +338,10 @@ class PipeMania(Problem):
 if __name__ == "__main__":
     
     board = Board.parse_instance()
-    board.print()
+    #board.print()
+
+    board.lock_positions()
+    print(board.locked)
 
     problem = PipeMania(board)
     #initial_state = (board, 1)
@@ -241,5 +351,3 @@ if __name__ == "__main__":
         print("Nenhuma solução foi encontrada.")
     else:
         result_state.state.board.print()  # Acede ao board a partir do state do Node retornado
-
-    pass
