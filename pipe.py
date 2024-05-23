@@ -341,7 +341,7 @@ if __name__ == "__main__":
     #board.print()
 
     board.lock_positions()
-    print(board.locked)
+    #print(board.locked)
 
     problem = PipeMania(board)
     #initial_state = (board, 1)
