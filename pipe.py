@@ -6,6 +6,9 @@
 # 00000 Nome1
 # 00000 Nome2
 
+import time;
+start_time = time.time()
+
 import sys, copy
 from search import (
     Problem,
@@ -346,8 +349,12 @@ if __name__ == "__main__":
     problem = PipeMania(board)
     #initial_state = (board, 1)
     result_state = depth_first_tree_search(problem)
+    #result_state = breadth_first_tree_search(problem)
     
     if result_state is None:
         print("Nenhuma solução foi encontrada.")
     else:
         result_state.state.board.print()  # Acede ao board a partir do state do Node retornado
+        end_time = time.time()
+        final_time = end_time - start_time
+        print(final_time)
