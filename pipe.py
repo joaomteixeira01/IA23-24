@@ -273,7 +273,7 @@ class PipeMania(Problem):
             return []
         
         if (state.position+1) in state.board.locked:
-            return []
+            return [(state.position+1, 'keep')]
         
         return state.board.get_actions(state.position + 1)
 
