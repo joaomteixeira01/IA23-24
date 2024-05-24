@@ -2,13 +2,12 @@
 # Devem alterar as classes e funções neste ficheiro de acordo com as instruções do enunciado.
 # Além das funções e classes sugeridas, podem acrescentar outras que considerem pertinentes.
 
-# Grupo 00:
-# 00000 Nome1
-# 00000 Nome2
-import cProfile
-import time;
-start_time = time.time()
+# Grupo 097:
+# 83897 Gonçalo Correia
+# 97226 João Teixeira
 
+import cProfile
+import numpy as np
 import sys, copy
 from search import (
     Problem,
@@ -42,11 +41,7 @@ class Board:
     """Representação interna de um tabuleiro de PipeMania."""
 
     def __init__(self, board_data, board_size, board_locked_list):
-        """if isinstance(board_data[0], str):  # list of strings
-            self.board = [list(row) for row in board_data]
-        else:
-            self.board = board_data"""
-        self.board = board_data
+        self.board = np.array(board_data, dtype='<U2')  # '<U2' permite strings de até dois caracteres.
         self.size = board_size
         self.locked = board_locked_list
 
@@ -86,10 +81,10 @@ class Board:
 
     def print(self):
         """Imprime o tabuleiro."""
+        output = []
         for row in self.board:
-            for value in row:
-                print(value, end=' ')
-            print()
+            output.append('\t'.join(row))
+        print('\n'.join(output))  # Agora o '\n' é explicitamente controlado pela função print()
 
     def get_actions(self, position: int):
         
@@ -358,8 +353,5 @@ if __name__ == "__main__":
         print("Nenhuma solução foi encontrada.")
     else:
         result_state.state.board.print()  # Acede ao board a partir do state do Node retornado
-        end_time = time.time()
-        final_time = end_time - start_time
-        print(final_time)
     pr.disable()
     pr.print_stats(sort='time')
