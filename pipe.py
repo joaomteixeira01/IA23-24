@@ -284,12 +284,20 @@ class PipeMania(Problem):
 
         pos, change = action
         row, col = divmod(pos - 1, state.board.size)
-        old_value = state.board.get_value(row, col)
-        state.board.set_value(row, col, change)
-        new_state = PipeManiaState(state.board, state.position + 1)
-        # Após explorar com new_state, desfaz a mudança:
-        state.board.set_value(row, col, old_value)
-        return new_state
+        
+        # Cria uma nova instância do tabuleiro com dados copiados apenas para a linha modificada
+        new_board_data = state.board.board[:]  # Cópia superficial do tabuleiro
+        modified_row = new_board_data[row][:]  # Cópia da linha que será alterada
+        new_board_data[row] = modified_row  # Substitui a linha no novo tabuleiro
+
+        # Cria um novo objeto Board para manter o estado imutável
+        new_board = Board(new_board_data, state.board.size, state.board.locked.copy())
+        
+        # Aplica a mudança usando a função set_value
+        new_board.set_value(row, col, change)
+        
+        # Cria e retorna o novo estado
+        return PipeManiaState(new_board, state.position + 1)
 
 
     def goal_test(self, state: PipeManiaState):
