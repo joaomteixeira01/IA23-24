@@ -41,7 +41,8 @@ class Board:
     """Representação interna de um tabuleiro de PipeMania."""
 
     def __init__(self, board_data, board_size, board_locked_list):
-        self.board = np.array(board_data, dtype='<U2')  # '<U2' permite strings de até dois caracteres.
+        #self.board = np.array(board_data, dtype='<U2')  # '<U2' permite strings de até dois caracteres.
+        self.board = board_data
         self.size = board_size
         self.locked = board_locked_list
 
@@ -84,7 +85,7 @@ class Board:
         output = []
         for row in self.board:
             output.append('\t'.join(row))
-        print('\n'.join(output))  # Agora o '\n' é explicitamente controlado pela função print()
+        print('\n'.join(output))
 
     def get_actions(self, position: int):
         
@@ -281,13 +282,14 @@ class PipeMania(Problem):
         das presentes na lista obtida pela execução de
         self.actions(state)."""
 
-        new_board = copy.deepcopy(state.board)
         pos, change = action
         row, col = divmod(pos - 1, state.board.size)
-        
-        new_board.set_value(row, col, change)
-
-        return PipeManiaState(new_board, state.position + 1)
+        old_value = state.board.get_value(row, col)
+        state.board.set_value(row, col, change)
+        new_state = PipeManiaState(state.board, state.position + 1)
+        # Após explorar com new_state, desfaz a mudança:
+        state.board.set_value(row, col, old_value)
+        return new_state
 
 
     def goal_test(self, state: PipeManiaState):
